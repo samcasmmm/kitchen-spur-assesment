@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
+import { Clock } from 'lucide-react';
 
 interface PeakHourDataPoint {
   date: string;
@@ -31,26 +32,32 @@ export default function TemporalPeakVisualizer({
   );
 
   return (
-    <div className='bg-zinc-900/40 border border-white/5 rounded-2xl p-6 backdrop-blur-sm transition-all hover:border-white/10 group'>
+    <div className='bg-[#111317]/90 border border-zinc-800/80 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-md transition-all duration-300 hover:border-zinc-700/80 group'>
       {/* Header Section */}
-      <header className='flex items-center justify-between mb-8'>
+      <header className='flex items-center justify-between mb-6'>
         <div className='space-y-1'>
           <div className='flex items-center gap-2'>
-            <div className='h-1.5 w-1.5 rounded-full bg-zinc-500 group-hover:bg-white transition-colors duration-500' />
-            <h3 className='text-[10px] uppercase tracking-[0.2em] font-bold text-zinc-500'>
+            <div className='p-1.5 rounded-lg bg-amber-950/60 border border-amber-800/50 text-amber-400'>
+              <Clock size={13} />
+            </div>
+            <h3 className='text-[10px] uppercase tracking-[0.2em] font-bold text-zinc-400'>
               Temporal Analysis
             </h3>
           </div>
-          <p className='text-sm font-medium text-zinc-100 tracking-tight'>
+          <p className='text-base font-bold text-white tracking-tight'>
             Peak Demand Windows
           </p>
         </div>
+
+        <span className='text-[10px] uppercase tracking-wider font-semibold px-2.5 py-1 rounded-full bg-amber-950/60 border border-amber-800/50 text-amber-400'>
+          24h Hourly Distribution
+        </span>
       </header>
 
       {timeseriesData.length === 0 ? (
-        <div className='h-55 flex flex-col items-center justify-center space-y-2'>
+        <div className='h-[220px] flex flex-col items-center justify-center space-y-2'>
           <div className='h-px w-8 bg-zinc-800' />
-          <p className='text-[10px] uppercase tracking-widest text-zinc-600 font-medium'>
+          <p className='text-[11px] uppercase tracking-widest text-zinc-500 font-medium'>
             Awaiting Traffic Data
           </p>
         </div>
@@ -60,18 +67,17 @@ export default function TemporalPeakVisualizer({
             data={timeseriesData}
             margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
           >
-            {/* Dark Mode Grid */}
             <CartesianGrid
               vertical={false}
               stroke='#27272a'
-              strokeDasharray='6 6'
+              strokeDasharray='4 4'
             />
 
             <XAxis
               dataKey='date'
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 10, fill: '#52525b', fontWeight: 500 }}
+              tick={{ fontSize: 10, fill: '#71717a', fontWeight: 500 }}
               tickFormatter={(val) => {
                 const dateObj = new Date(val);
                 return dateObj.toLocaleDateString('en-US', {
@@ -86,45 +92,45 @@ export default function TemporalPeakVisualizer({
               domain={[0, 23]}
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 10, fill: '#52525b' }}
+              tick={{ fontSize: 10, fill: '#71717a' }}
               tickFormatter={(h) => `${h}:00`}
             />
 
             <Tooltip
-              cursor={{ fill: 'rgba(255, 255, 255, 0.03)', radius: 8 }}
+              cursor={{ fill: 'rgba(245, 158, 11, 0.05)', radius: 8 }}
               contentStyle={{
-                backgroundColor: '#09090b',
+                backgroundColor: '#111317',
                 border: '1px solid #27272a',
-                borderRadius: '12px',
+                borderRadius: '14px',
                 fontSize: '11px',
-                padding: '12px',
-                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)',
+                padding: '12px 14px',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.6)',
               }}
-              itemStyle={{ color: '#ffffff', fontWeight: 600, padding: 0 }}
+              itemStyle={{ color: '#ffffff', fontWeight: 700, padding: 0 }}
               labelStyle={{
-                color: '#71717a',
+                color: '#a1a1aa',
                 marginBottom: '4px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.1em',
                 fontSize: '9px',
               }}
               formatter={(value: number, _name: string, props: any) => [
-                `${value}:00 (${props.payload.order_count} units)`,
+                `${value}:00 (${props?.payload?.order_count} orders)`,
                 'Peak Hour',
               ]}
             />
 
-            <Bar dataKey='peak_hour' radius={[4, 4, 4, 4]} barSize={16}>
+            <Bar dataKey='peak_hour' radius={[6, 6, 0, 0]} barSize={18}>
               {timeseriesData.map((entry, idx) => {
                 const isAbsolutePeak = entry.order_count === absoluteMaxOrders;
                 return (
                   <Cell
                     key={`cell-${idx}`}
-                    fill={isAbsolutePeak ? '#ffffff' : '#27272a'}
-                    className='transition-all duration-500 cursor-crosshair'
+                    fill={isAbsolutePeak ? '#f59e0b' : '#3b82f6'}
+                    className='transition-all duration-300'
                     style={{
                       filter: isAbsolutePeak
-                        ? 'drop-shadow(0 0 8px rgba(255,255,255,0.3))'
+                        ? 'drop-shadow(0 0 10px rgba(245,158,11,0.5))'
                         : 'none',
                     }}
                   />

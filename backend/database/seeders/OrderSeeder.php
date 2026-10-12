@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\Restaurant;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
 
@@ -76,12 +77,19 @@ class OrderSeeder extends Seeder
 
         $idMap = $this->buildRestaurantIdMap();
         $statusPool = $this->buildStatusPool();
-        $poolSize = count($statusPool);
+
+        // Clear existing orders to avoid duplicates on re-seeding
+        Order::query()->delete();
+
+        // Shift dates from 2026-04-XX to around current date (2026-10-12)
+        $maxOriginalDate = Carbon::parse(collect($orders)->max('order_time'));
+        $targetEndDate = Carbon::parse('2026-10-12 21:00:00');
+        $daysOffset = $maxOriginalDate->diffInDays($targetEndDate);
 
         $rows = [];
+        $now = now();
 
         foreach ($orders as $data) {
-            // Resolve JSON restaurant_id to actual DB id
             $dbRestaurantId = $idMap[$data['restaurant_id']] ?? null;
 
             if (! $dbRestaurantId) {
@@ -92,25 +100,42 @@ class OrderSeeder extends Seeder
                 continue;
             }
 
-            // Pick a random status from the weighted pool
             $status = $statusPool[array_rand($statusPool)];
-            $now = now();
+            $shiftedTime = Carbon::parse($data['order_time'])->addDays($daysOffset);
 
             $rows[] = [
                 'restaurant_id' => $dbRestaurantId,
                 'order_amount' => $data['order_amount'],
-                'ordered_at' => $data['order_time'],  // ISO datetime string maps directly
-                'status' => $status->value,        // store the integer (0-3)
+                'ordered_at' => $shiftedTime->toDateTimeString(),
+                'status' => $status->value,
                 'created_at' => $now,
                 'updated_at' => $now,
             ];
         }
 
-        // Chunk insert for performance (avoids 200 individual INSERT queries)
+        // Also add an additional week of history (7 days prior) for full range coverage
+        foreach ($orders as $data) {
+            $dbRestaurantId = $idMap[$data['restaurant_id']] ?? null;
+            if (! $dbRestaurantId) continue;
+
+            $status = $statusPool[array_rand($statusPool)];
+            $priorTime = Carbon::parse($data['order_time'])->addDays($daysOffset)->subDays(7);
+
+            $rows[] = [
+                'restaurant_id' => $dbRestaurantId,
+                'order_amount' => $data['order_amount'],
+                'ordered_at' => $priorTime->toDateTimeString(),
+                'status' => $status->value,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        // Chunk insert for performance
         foreach (array_chunk($rows, 50) as $chunk) {
             Order::insert($chunk);
         }
 
-        // $this->command->info('✅ Orders seeded: '.count($rows).' records');
+        $this->command->info('✅ Orders seeded: '.count($rows).' records around 2026-10-12');
     }
 }

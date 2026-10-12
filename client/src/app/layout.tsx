@@ -32,7 +32,7 @@ export default function RootLayout({
       lang='en'
       className={`dark ${geistSans.className} ${geistMono.variable} h-full antialiased`}
     >
-      <body className='min-h-full flex flex-col selection:bg-white selection:text-black '>
+      <body className='min-h-full flex flex-col bg-[#0b0c10] text-zinc-100 selection:bg-white selection:text-zinc-950'>
         <div className='fixed inset-0 pointer-events-none' />
 
         <QueryProvider>{children}</QueryProvider>
