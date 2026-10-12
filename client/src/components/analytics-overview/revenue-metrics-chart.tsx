@@ -115,7 +115,7 @@ export default function RevenueMetricsChart({
                 letterSpacing: '0.1em',
                 fontSize: '9px',
               }}
-              formatter={(val: number) => [`${val} orders`, 'Volume']}
+              formatter={(val) => [`${val ?? 0} orders`, 'Volume']}
             />
 
             <Area

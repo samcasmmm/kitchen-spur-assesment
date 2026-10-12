@@ -114,8 +114,8 @@ export default function TemporalPeakVisualizer({
                 letterSpacing: '0.1em',
                 fontSize: '9px',
               }}
-              formatter={(value: number, _name: string, props: any) => [
-                `${value}:00 (${props?.payload?.order_count} orders)`,
+              formatter={(value, _name, item) => [
+                `${value}:00 (${(item as { payload?: { order_count?: number } })?.payload?.order_count ?? 0} orders)`,
                 'Peak Hour',
               ]}
             />

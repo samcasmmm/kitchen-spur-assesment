@@ -113,8 +113,8 @@ export default function RevenueStreamVisualizer({
                 letterSpacing: '0.1em',
                 fontSize: '9px',
               }}
-              formatter={(val: number) => [
-                `₹ ${val.toLocaleString('en-IN')}`,
+              formatter={(val) => [
+                `₹ ${Number(val || 0).toLocaleString('en-IN')}`,
                 'Revenue',
               ]}
             />

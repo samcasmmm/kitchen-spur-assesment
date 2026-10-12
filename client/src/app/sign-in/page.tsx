@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { ArrowUpRight, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { isAxiosError } from 'axios';
 import { useSignIn } from '@/hooks/useAuthQueries';
 
 export default function AuthPage() {
@@ -10,6 +11,21 @@ export default function AuthPage() {
   const [showBalance, setShowBalance] = useState(true);
 
   const { mutate: signIn, isPending, error: serverError } = useSignIn();
+
+  const getErrorMessage = () => {
+    if (!serverError) return '';
+    if (isAxiosError(serverError)) {
+      const data = serverError.response?.data as { message?: string } | undefined;
+      if (data?.message) return data.message;
+      if (serverError.response?.status === 401) {
+        return 'Invalid credentials. Please check your email and password.';
+      }
+      if (!serverError.response || serverError.code === 'ERR_NETWORK') {
+        return 'Unable to connect to the server. Please verify your connection.';
+      }
+    }
+    return 'Invalid credentials. Please check your email and password.';
+  };
 
   const [form, setForm] = useState({
     firstName: 'Admin',
@@ -425,14 +441,7 @@ export default function AuthPage() {
             {serverError && (
               <div className='p-3 rounded-xl bg-red-50/90 border border-red-200 text-red-700 text-xs flex items-center gap-2.5'>
                 <AlertCircle className='w-4 h-4 shrink-0 text-red-500' />
-                <span>
-                  {(serverError as any)?.response?.data?.message ||
-                    ((serverError as any)?.response?.status === 401
-                      ? 'Invalid credentials. Please check your email and password.'
-                      : !(serverError as any)?.response || (serverError as any)?.code === 'ERR_NETWORK'
-                        ? 'Unable to connect to the server. Please verify your connection.'
-                        : 'Invalid credentials. Please check your email and password.')}
-                </span>
+                <span>{getErrorMessage()}</span>
               </div>
             )}
 
